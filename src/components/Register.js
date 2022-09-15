@@ -67,7 +67,6 @@ const Register = () => {
             setisLoading(false);
             // setIsRegister(true);
             window.setTimeout(() => window.location.reload(), 3000);
-            // window.location.reload();
           } else {
             swal({
               title: "Something went wrong",
