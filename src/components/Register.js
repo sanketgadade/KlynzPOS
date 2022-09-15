@@ -3,19 +3,25 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import swal from "sweetalert";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { postRegistrationData } from "../AxiosAPI/Registration";
+import { postPosData } from "../AxiosAPI/Registration";
 import Button from "@mui/material/Button";
 import logo from "../images/BTlogo.png";
 
 const Register = () => {
   const [isLoading, setisLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
-  const [files, setFiles] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const SUPPORTED_FORMATS = [
+    // "application/pdf",
+    ".csv",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-excel",
+  ];
 
   const formik = useFormik({
     initialValues: {
-      customerName: "",
-      customerEmail: "",
+      // customerName: "",
+      // customerEmail: "",
       customerPosFile: "",
     },
     validationSchema: Yup.object({
@@ -23,10 +29,19 @@ const Register = () => {
       // customerEmail: Yup.string()
       //   .email("Please enter valid email")
       //   .required("Email is required"),
-      customerPosFile: Yup.string().required("File is required"),
+      customerPosFile: Yup.mixed()
+        .required("File is required")
+        .test(
+          "fileType",
+          "Only the following formats are accepted: .xlsx, .xls, .csv",
+          (value) =>
+            !value || (value && SUPPORTED_FORMATS.includes(value?.type))
+        ),
     }),
     onSubmit: async (data, helpers) => {
-      console.log("befre api call" + data);
+      const formData = new FormData();
+      formData.append("customerPosFile", data.customerPosFile);
+      console.log(data);
       setisLoading(true);
 
       swal({
@@ -37,7 +52,7 @@ const Register = () => {
         dangerMode: true,
       }).then(async (willDelete) => {
         if (willDelete) {
-          const res = await postRegistrationData(data);
+          const res = await postPosData(data);
 
           if (res.status == 200) {
             swal({
@@ -47,10 +62,12 @@ const Register = () => {
               timer: 2000,
               // button: "Ok",
             });
-            setisLoading(false);
-            // setIsRegister(true);
 
             helpers.resetForm();
+            setisLoading(false);
+            // setIsRegister(true);
+            window.setTimeout(() => window.location.reload(), 3000);
+            // window.location.reload();
           } else {
             swal({
               title: "Something went wrong",
@@ -60,7 +77,7 @@ const Register = () => {
               // button: "Ok",
             });
             setisLoading(false);
-            // window.location.reload();
+            window.location.reload();
           }
         } else {
           setisLoading(false);
@@ -68,6 +85,10 @@ const Register = () => {
       });
     },
   });
+
+  const handleFileSelect = (event) => {
+    setSelectedFile(event.target.files[0]);
+  };
 
   return (
     <div className="App">
@@ -105,19 +126,29 @@ const Register = () => {
                     </div> */}
                     <div className="form-floating mb-2">
                       <input
-                        // className="form-control"
                         id="posFile"
                         type="file"
-                        onChange={formik.handleChange("customerPosFile")}
-                        value={formik.values.customerPosFile}
+                        //defaultValue={formik.values.customerPosFile}
+                        //value={formik.values.customerPosFile}
+                        onChange={(event) =>
+                          formik.setFieldValue(
+                            "customerPosFile",
+                            event.target.files[0]
+                          )
+                        }
                         // accept=".xlsx, .xls, .csv"
                         accept="application/pdf,.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
                         required
                       />
                     </div>
-                    <span style={{ color: "red" }}>
-                      {formik.errors.customerPosFile}
-                    </span>
+                    {/* <span style={{ color: "Black" }}>
+                      Please select files with CSV,Excel format.
+                    </span> */}
+                    <div className="form-floating mb-2">
+                      <span style={{ color: "red" }}>
+                        {formik.errors.customerPosFile}
+                      </span>
+                    </div>
                     {/* <div className="form-floating mb-3">
                       <input
                         className="form-control"
@@ -146,7 +177,8 @@ const Register = () => {
                         <button
                           className="btn btn-primary"
                           type="button"
-                          onClick={formik.handleSubmit}
+                          // onClick={formik.handleSubmit}
+                          onClick={(event) => formik.handleSubmit(event)}
                         >
                           Submit
                         </button>
