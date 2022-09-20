@@ -3,11 +3,11 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import swal from "sweetalert";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { postPosData } from "../AxiosAPI/Registration";
+import { postPosData } from "../AxiosAPI/clientPosData";
 import Button from "@mui/material/Button";
 import logo from "../images/BTlogo.png";
 
-const Register = () => {
+const PosRegister = () => {
   const [isLoading, setisLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -201,4 +201,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default PosRegister;
